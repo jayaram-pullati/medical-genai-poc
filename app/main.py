@@ -24,5 +24,5 @@ def health():
 
 @app.post("/ask")
 def ask(req: AskRequest):
-    # In interview, explain: this calls Bedrock embeddings + OpenSearch kNN + Bedrock generation
+    # This calls Bedrock embeddings + OpenSearch kNN + Bedrock generation
     return rag.answer(req.question)

@@ -31,7 +31,6 @@ The system retrieves drug-related information from enterprise data sources and g
                 Bedrock (Generate answer)
                          │
                 Answer + Citations
-
 ```
 
 #### Components
@@ -52,18 +51,22 @@ The system retrieves drug-related information from enterprise data sources and g
 
 ### 🏗️ High-Level Flow
 ```
-React UI (Amplify Hosted)
-        ↓
-FastAPI Backend (Python)
-        ↓
-Embedding (AWS Bedrock)
-        ↓
-OpenSearch (kNN Vector Retrieval)
-        ↓
-LLM Generation (AWS Bedrock)
-        ↓
-Answer + Citations
+                Amplify (Frontend Hosting)
+                         ↓
+                    FastAPI API
+                         ↓
+               Bedrock (Embeddings)
+                         ↓
+              OpenSearch (kNN Retrieval)
+                         ↓
+               Bedrock (LLM Generation)
+                         ↓
+              Answer + Citations
 
+Supporting Services:
+- S3 → Document Storage
+- DynamoDB → Structured Metadata
+- Glue → ETL & Data Preparation
 ```
 #### Supporting services:
 
@@ -81,7 +84,7 @@ Answer + Citations
 
 ### AWS Services and Their Responsibilities
 
-#### 🔹 Amazon S3 – Document Storage
+### 🟢 Amazon S3 – Document Storage
 
 **Purpose:** Store raw drug documentation.
 
@@ -101,7 +104,7 @@ Answer + Citations
 
 - Prepares content for embedding
 
-#### 🔹 Amazon DynamoDB – Structured Metadata
+### 🟢 Amazon DynamoDB – Structured Metadata
 
 **Purpose:** Store structured drug data and enforce version control.
 
@@ -131,7 +134,7 @@ Answer + Citations
 
 - Ensuring latest label usage
 
-#### 🔹 Amazon OpenSearch – Semantic Retrieval
+### 🟢 Amazon OpenSearch – Semantic Retrieval
 
 **Purpose:** Retrieve relevant drug content using vector similarity.
 
@@ -155,7 +158,7 @@ Answer + Citations
 
 - Hybrid search capability (keyword + vector)
 
-#### 🔹 Amazon Bedrock – GenAI Engine
+### 🟢 Amazon Bedrock – GenAI Engine
 
 Bedrock is used in two distinct roles:
 
@@ -181,29 +184,109 @@ Generates:
 
 Strict prompt enforcement ensures no hallucination.
 
-#### 🔹 AWS Glue (Optional ETL Layer)
+### 🟢 AWS Glue – Data Preparation Layer (ETL)
 
-Used for:
+**Purpose**
 
-- Cleaning inconsistent drug data
+AWS Glue is used for:
+
+- Extracting data from multiple sources
+
+- Cleaning and normalizing drug information
 
 - Converting legacy formats
 
-- Scheduled ingestion jobs
+- Preparing AI-ready structured data
 
-Prepares data before indexing.
+- Scheduling ingestion pipelines
 
-#### 🔹 AWS Amplify (Frontend Hosting)
+### Where Glue Fits in Architecture
+```
+Raw Drug Data (S3 / Legacy DB)
+        ↓
+AWS Glue (ETL)
+        ↓
+Cleaned Structured Data
+        ↓
+Embedding + OpenSearch Indexing
+```
+### Example Use Cases in Medical Domain
 
-Used for:
+Glue can:
 
-- Hosting React UI
+- Normalize inconsistent drug naming
 
-- CI/CD for frontend
+- Extract dosage fields from raw text
 
-- Optional Cognito authentication
+- Convert PDFs into structured JSON
 
-Does not handle GenAI logic.
+- Merge data from multiple regulatory sources
+
+- Prepare scheduled re-indexing jobs
+
+### Why Glue Instead of Custom Script?
+
+- Serverless
+
+- Scalable
+
+- Managed job scheduling
+
+- Integration with S3 and DynamoDB
+
+- Better for large batch processing
+
+### 🟢 AWS Amplify – Frontend & Deployment Layer
+
+**Purpose**
+
+AWS Amplify is used for:
+
+- Hosting the React frontend
+
+- Managing CI/CD for UI deployment
+
+- Integrating authentication (Cognito, optional)
+
+- Connecting frontend securely to backend APIs
+
+### Where Amplify Fits in the Architecture
+```
+User
+  ↓
+React UI (Hosted in Amplify)
+  ↓
+HTTPS API Call
+  ↓
+FastAPI Backend (RAG system)
+```
+Amplify does NOT handle:
+
+- Embeddings
+
+- Retrieval
+
+- LLM generation
+
+It only handles:
+
+- UI hosting
+
+- Frontend deployment
+
+- Authentication (optional)
+
+### Why Amplify?
+
+- Fully managed frontend hosting
+
+- Easy GitHub integration
+
+- Automatic builds
+
+- Secure environment configuration
+
+- Good integration with Cognito
 
 ### Detailed Query Flow
 
